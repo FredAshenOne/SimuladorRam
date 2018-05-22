@@ -1,6 +1,8 @@
 package principal;
 
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,15 +19,16 @@ public class Segmentos {
 	private JTable table;
 	public JLabel lblHeader;
 	private int id,memory;
+	int spTotalLibre;
 	private Procesos p1,p2,p3,p4;
-
+	List<Procesos> listaPSeg = new ArrayList<Procesos>(),listaPTot = new ArrayList<Procesos>();
+	
 	
 	public JPanel getSegmento() {
 		
 		segmento = new JPanel();
 		segmento.setBounds(10, 11, 169, 83);
 		segmento.setLayout(null);
-		
 		lblHeader = new JLabel("Segmento "+id+"");
 		lblHeader.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 10));
 		lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
@@ -38,11 +41,17 @@ public class Segmentos {
 		scrollPane.setBounds(10, 41, 148, 27);
 		segmento.add(scrollPane);
 		scrollPane.setBorder(null);
+		
+		listaPSeg.add(getP1());
+		listaPSeg.add(getP2());
+		listaPSeg.add(getP3());
+		listaPSeg.add(getP4());
+		
 		table = new JTable();
 		table.setModel(new DefaultTableModel(
 			new Object[][] {
 			},new String[] {
-				p1.getName(),p2.getName(),p3.getName(),p4.getName()
+				listaPSeg.get(0).getName(),listaPSeg.get(1).getName(),listaPSeg.get(2).getName(),listaPSeg.get(3).getName()
 			}
 		));
 		scrollPane.setViewportView(table);
@@ -51,6 +60,9 @@ public class Segmentos {
 		return segmento;
 	}
 
+	public void paintInsideTable() {
+		
+	}
 	public void setSegmento(JPanel segmento) {
 		this.segmento = segmento;
 	}
@@ -93,5 +105,20 @@ public class Segmentos {
 	public void setMemory(int memory) {
 		this.memory = memory;
 	}
+	public JTable getTable() {
+		return table;
+	}
+
+	public void setTable(JTable table) {
+		this.table = table;
+	}
+	public List<Procesos> getListaP() {
+		return listaPSeg;
+	}
+
+	public void setListaP(List<Procesos> listaP) {
+		this.listaPSeg = listaP;
+	}
+
 
 }

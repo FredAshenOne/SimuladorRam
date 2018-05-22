@@ -10,13 +10,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
-import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class Menu extends JFrame implements ActionListener {
@@ -24,15 +22,16 @@ public class Menu extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	Style s = new Style();
-	Manager m = new Manager();
+		Manager m = new Manager();
 	private JPanel contentPane;
 	JButton btnContinue;
 	JLabel lblWarning;
 	int gigas;
 	Segmentos seg = new Segmentos();
-	JComboBox cbGigas,cbOrder;
+	JComboBox<Object> cbGigas,cbOrder;
 	String def = "___";
 	int Width = 192;
+	List<Procesos> listP= new ArrayList<Procesos>();
 	
 	public Menu() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -99,7 +98,7 @@ public class Menu extends JFrame implements ActionListener {
 		btnContinue.addActionListener(this);
 		s.mdPanel(mainPanel, Color.WHITE);
 		s.mdBtn(btnContinue,Color.decode("#00796B"), Color.WHITE);
-		
+		m.btnBack.addActionListener(this);
 		lblWarning.setForeground(Color.red);
 	}
 
@@ -110,8 +109,20 @@ public class Menu extends JFrame implements ActionListener {
 			if(cbOrder.getSelectedItem().toString().equals("")	|| cbGigas.getSelectedItem().toString().equals("")) {
 				lblWarning.setText("Faltan Datos");
 			}else {
-				gigas = Integer.parseInt(cbGigas.getSelectedItem().toString()) / 1024;
-				createSegmentos(gigas,m.processPane);
+				m.choice = cbOrder.getSelectedIndex();
+				m.spTotal=Integer.parseInt(cbGigas.getSelectedItem().toString());
+				gigas = m.spTotal / 1024;
+				m.freeSpace = m.spTotal;
+				
+				switch(m.choice){			
+				case 3:
+					createSegmentosFirst(gigas,m.processPane);
+					break;
+				case 2:case 1:
+					createSegmentosBW(gigas,m.processPane);
+					break;
+					
+				}
 				int width = 397;
 				if(gigas > 4 ) {
 					width +=170;
@@ -126,35 +137,68 @@ public class Menu extends JFrame implements ActionListener {
 				m.setBounds(100,100,width,500);
 				m.setVisible(true);
 				this.setVisible(false);
+				 
+					
 			}
-			m.choice = cbOrder.getSelectedIndex();
+		}else if(e.getSource() == m.btnBack) {
+			m.setVisible(false);
+			this.setVisible(true);
 		}
 	}
 	
 	
-	public void createSegmentos(int gigas,JPanel pane) {
+	public void createSegmentosFirst(int gigas,JPanel pane) {
+		int x = 10,y = 11,pros = gigas*4,index = 0;
+		listP.clear();
+		for(int k = 0;k<=pros;k++) {
+			Procesos p = new Procesos(k,def,"libre",256);
+			listP.add(p);			
+		}
+		m.lista.clear();
+		for(int i = 0;i<gigas;i++) {
+			Segmentos seg = new Segmentos();
+			seg.setId(i+1);
+			seg.setMemory(0);
+			seg.setP1(listP.get(index));
+			index++;
+			seg.setP2(listP.get(index));
+			index++;	
+			seg.setP3(listP.get(index));
+			index++;
+			seg.setP4(listP.get(index));
+			index++;
+			seg.setMemory(1024);
+			JPanel memo = seg.getSegmento();
+			pane.add(memo);
+			memo.setBounds(x, y, 169, 83);
+			m.lista.add(seg);
+			y+=83;
+			if(i==4 || i == 9 || i == 14) {
+				x+=169;
+				y=11;
+			}
+			m.listaPtot = listP;			
+		}		
+	}
+	
+	public void createSegmentosBW(int gigas,JPanel pane) {
 		int x = 10,y = 11;
 		for(int i = 1;i<=gigas;i++) {
 			Segmentos seg = new Segmentos();
+			seg.getListaP().clear();
 			seg.setId(i);
-			seg.setMemory(0);
-			for(int k = 1;k < 5;k++) {
-				Procesos p = new Procesos(k,def,"libre",256);
-				switch(k) {
-				case 1:
+			seg.setMemory(1024);
+			for(int k = 0;k<4;k++) {
+				Procesos p = new Procesos(k+1, def,"libre", 256);
+				if(k==0) {
 					seg.setP1(p);
-					break;
-				case 2:
+				}else if(k==1){
 					seg.setP2(p);
-					break;
-				case 3:
+				}else if(k==2) {
 					seg.setP3(p);
-					break;
-				case 4:
+				}else {
 					seg.setP4(p);
-					break;				
 				}
-				seg.setMemory(seg.getMemory()+p.getSpace());
 			}
 			
 			JPanel memo = seg.getSegmento();
@@ -164,11 +208,9 @@ public class Menu extends JFrame implements ActionListener {
 			y+=83;
 			if(i==4 || i == 8 || i == 12) {
 				x+=169;
-				y=11;				
+				y=11;
 			}
 		}
-		
 	}
-	
 	
 }

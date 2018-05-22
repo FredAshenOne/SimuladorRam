@@ -1,5 +1,6 @@
 package principal;
 
+
 public class Procesos {
 	
 	private int id;
@@ -37,6 +38,7 @@ public class Procesos {
 	public void setSpace(int space) {
 		this.space = space;
 	}
+	
 	
 
 }
