@@ -170,6 +170,7 @@ public class Menu extends JFrame implements ActionListener {
 			seg.setMemory(1024);
 			JPanel memo = seg.getSegmento();
 			pane.add(memo);
+			s.mdPanel(memo, Color.white);
 			memo.setBounds(x, y, 169, 83);
 			m.lista.add(seg);
 			y+=83;
@@ -202,6 +203,7 @@ public class Menu extends JFrame implements ActionListener {
 			}
 			
 			JPanel memo = seg.getSegmento();
+			s.mdPanel(memo, Color.white);
 			pane.add(memo);
 			memo.setBounds(x, y, 169, 83);
 			m.lista.add(seg);

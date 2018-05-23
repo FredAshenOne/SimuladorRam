@@ -1,9 +1,11 @@
 package principal;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
+
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -18,7 +20,7 @@ public class Console extends JFrame implements KeyListener{
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	JTextArea txtConsole = new JTextArea();
-	String lineText;
+	String lineText,endLine;
 	int numLines,lineStart,lineEnd;
 	Document doc;
 	Element lineElem,rootElem;
@@ -34,21 +36,17 @@ public class Console extends JFrame implements KeyListener{
 		
 		txtConsole.setBounds(0, 0, 434, 261);
 		contentPane.add(txtConsole);
-		
+		txtConsole.setForeground(Color.WHITE);
+		txtConsole.setOpaque(true);
+		txtConsole.setBackground(Color.BLACK);
 		doc = txtConsole.getDocument();
-		rootElem = doc.getDefaultRootElement();
-		numLines = rootElem.getElementCount();
-		lineElem = rootElem.getElement(numLines -1);
-		lineStart = lineElem.getStartOffset();
-		lineEnd = lineElem.getEndOffset();
-		
 		txtConsole.addKeyListener(this);
-		
-		
-		
-		
+		txtConsole.setCaretColor(Color.WHITE);
+		txtConsole.getCaret().setBlinkRate(500);
 		
 	}
+	
+	
 
 
 	@Override
@@ -68,7 +66,7 @@ public class Console extends JFrame implements KeyListener{
 	public void keyTyped(KeyEvent e) {
 	}
 	
-	public String[] getLastLine() {
+	public String[] getLastLine(JFrame c) {
 		String[] text,instruction = null;
 		try {
 			rootElem = doc.getDefaultRootElement();
@@ -78,26 +76,48 @@ public class Console extends JFrame implements KeyListener{
 			lineEnd = lineElem.getEndOffset();
 			lineText = doc.getText(lineStart,lineEnd - lineStart);
 		} catch (BadLocationException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		lineText = lineText.replace(")","");
-		lineText = lineText.replace("\"", "");
-		
-		text = lineText.split("\\(");
-		if(text[0].equals("add")) {
-			String[] parameters = text[1].split(",");
-			instruction = new String[] {text[0],parameters[0],parameters[1]};
-			System.out.println(instruction[0]+" "+instruction[1]+" "+instruction[2]);
-		}else if(text[0].equals("kill")) {
-			System.out.println(text[0]+" "+text[1]);
-			return text;
-		}else if(text[0].equals("exit")) {
-			this.setVisible(false);
-		}else {
-			
+		txtConsole.setCaretPosition(txtConsole.getText().length());
+		lineText = lineText.substring(0,lineText.length()-1);
+		if(isAnExpression(lineText)) {
+			lineText = lineText.replace("'",""); 
+			lineText = lineText.replace("\"", "");
+			lineText = lineText.substring(0,lineText.length()-1);
+			text = lineText.split("\\(");
+			if(text[0].equals("add")) {
+				String[] parameters = text[1].split(",");
+				instruction = new String[] {text[0],parameters[0],parameters[1]};
+				arrayLoop(instruction);
+			}else if(text[0].equals("kill")) {
+				return text;
+			}else if(text[0].equals("exit")) {
+				c.setVisible(false);
+			}else {
+				txtConsole.setText("La funcio n no es valida\n");
+			}
+		}else{
+			txtConsole.setText("La funcion no es valida\n");
 		}
 		return instruction;
+	}	
+	
+	public boolean isAnExpression(String s) {
+		Pattern patAdd = Pattern.compile("^[a-zA-Z]{3}[(](\"|\')[a-zA-Z]{1,3}(\"|\')[,][0-9]{3,4}[)]");
+		Pattern patKill = Pattern.compile("^[a-zA-Z]{4}[(](\"|\')[a-zA-Z]{1,3}(\"|\')[)]");
+		Pattern patExit = Pattern.compile("^[a-zA-Z]{4}[(][)]");
+		Matcher matAdd = patAdd.matcher(s);
+		Matcher matExit = patExit.matcher(s);
+		Matcher matKill = patKill.matcher(s);
+		if(matAdd.matches()||matKill.matches()|| matExit.matches()) {
+			return true;
+		}
+		return false;
+	}
+	public void arrayLoop(String[] a) {
+
+		for(int i=0;i < a.length;i++) {
+			System.out.println(a[i]);
+		}
 	}
 }

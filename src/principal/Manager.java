@@ -24,6 +24,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Manager extends JFrame implements ActionListener,KeyListener{
 
@@ -42,6 +44,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	JRadioButton rdbtnKill,rdbtnAdd;
 	Console c = new Console();
 	int[] array,ids;
+	String[] instruction;
 	
 	public List<Procesos> listaPtot = new ArrayList<Procesos>();
 	
@@ -55,7 +58,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		mainPanel = new JPanel();
-		mainPanel.setBounds(0, 0, 920, 450);
+		mainPanel.setBounds(0, 0, 920, 457);
 		contentPane.add(mainPanel);
 		mainPanel.setLayout(null);
 		
@@ -71,6 +74,18 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		processMenu.add(lblHeader);
 		
 		btnContinue = new JButton("Continuar");
+		btnContinue.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				st.btnPointer(btnContinue);
+				st.btnHover(btnContinue, Color.WHITE, Color.decode("#00796B"), Color.decode("#00796B"));
+			}
+	
+			@Override
+			public void mouseExited(MouseEvent e) {
+			st.mdBtn(btnContinue, Color.decode("#00796B"), Color.WHITE);
+			}
+		});
 		btnContinue.setBounds(10, 361, 119, 23);
 		processMenu.add(btnContinue);
 		btnContinue.addActionListener(this);
@@ -82,20 +97,20 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		processMenu.add(lblWarning);
 		lblWarning.setForeground(Color.RED);
 		
-		JPanel panel = new JPanel();
-		panel.setBounds(0, 102, 141, 223);
-		processMenu.add(panel);
-		panel.setLayout(null);
+		JPanel statsPane = new JPanel();
+		statsPane.setBounds(0, 102, 141, 223);
+		processMenu.add(statsPane);
+		statsPane.setLayout(null);
 		
 		JLabel lblNombreDeProceso = new JLabel("<html><style>body{text-align:center:}</style><body>Nombre de proceso <br>(3 caracteres maximo)</body><html>");
 		lblNombreDeProceso.setBounds(0, 11, 141, 47);
-		panel.add(lblNombreDeProceso);
+		statsPane.add(lblNombreDeProceso);
 		lblNombreDeProceso.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNombreDeProceso.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 12));
 		
 		txtName = new JTextField();
 		txtName.setBounds(10, 55, 119, 32);
-		panel.add(txtName);
+		statsPane.add(txtName);
 		txtName.setHorizontalAlignment(SwingConstants.CENTER);
 		txtName.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 18));
 		txtName.setColumns(10);
@@ -103,14 +118,14 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		
 		txtMemo = new JTextField();
 		txtMemo.setBounds(10, 126, 119, 32);
-		panel.add(txtMemo);
+		statsPane.add(txtMemo);
 		txtMemo.setHorizontalAlignment(SwingConstants.CENTER);
 		txtMemo.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 14));
 		txtMemo.setColumns(10);
 		
 		
 		lblMemory.setBounds(6, 98, 123, 32);
-		panel.add(lblMemory);
+		statsPane.add(lblMemory);
 		lblMemory.setHorizontalAlignment(SwingConstants.CENTER);
 		lblMemory.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 12));
 		
@@ -118,7 +133,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		labelMemoW.setHorizontalAlignment(SwingConstants.CENTER);
 		labelMemoW.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 10));
 		labelMemoW.setBounds(0, 165, 141, 47);
-		panel.add(labelMemoW);
+		statsPane.add(labelMemoW);
 		
 		rdbtnAdd = new JRadioButton("Add");
 		rdbtnAdd.setFont(new Font("Yu Gothic Light", Font.PLAIN, 12));
@@ -159,48 +174,55 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		st.imgBtn(btnConsole, "views/console.png");
 		
 		c.txtConsole.addKeyListener(this);
+		st.mdPanel(mainPanel, Color.WHITE);
+		st.mdPanel(processMenu, Color.WHITE);
+		st.mdPanel(processPane, Color.white);
+		st.mdPanel(statsPane, Color.white);
+		rdbtnAdd.setOpaque(true);
+		rdbtnKill.setOpaque(true);
+		rdbtnAdd.setBackground(null);
+		rdbtnKill.setBackground(null);
+		st.mdBtn(btnContinue, Color.decode("#00796B"), Color.WHITE);
 	}
-	
-	
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == btnContinue) {
-			if(g1.getSelection().getActionCommand().equals("add")) {
-				memo = bitMultiplier(Integer.parseInt(txtMemo.getText()));
-					System.out.println("memo: "+memo);
-					switch(choice) {
-						case 1:
-							addProcessBest(memo,txtName.getText());
-							break;
-						case 2:
-							break;
-						case 3: 
-							if(spaceCheckerFirst(memo,lista)) {
-								if(consecutiveSpace(listaPtot,memo)) {
-									consecutiveRoom(listaPtot,memo/256);
-									addProcessFirst(txtName.getText());
+			if(txtName.getText().length() > 0 && txtMemo.getText().length() > 0) {
+				if(g1.getSelection().getActionCommand().equals("add")) {
+					memo = bitMultiplier(Integer.parseInt(txtMemo.getText()));
+						System.out.println("memo: "+memo);
+						switch(choice) {
+							case 1:
+								addProcessBest(memo,txtName.getText());
+								break;
+							case 2:
+								break;
+							case 3: 
+								if(spaceCheckerFirst(memo,lista)) {
+									if(consecutiveSpace(listaPtot,memo)) {
+										consecutiveRoom(listaPtot,memo/256);
+										addProcessFirst(txtName.getText());
+									}else {
+										lblWarning.setText("No hay espacio suficiente");
+									}
 								}else {
 									lblWarning.setText("No hay espacio suficiente");
 								}
-							}else {
-								lblWarning.setText("No hay espacio suficiente");
+								break;							
 							}
-							break;							
-						}
-			}else {
-				switch(choice) {
-				case 1:case 2:
-					break;
-				case 3:
-					killProcessFirst(txtName.getText());
-					break;
+				}else {
+					switch(choice) {
+					case 1:case 2:
+						killProcessBW(lista,txtName.getText());
+						break;
+					case 3:
+						killProcessFirst(txtName.getText());
+						break;
+					}
 				}
 			}
-					
-			
-		
-			
+						
 		}else if(e.getSource() == btnBack) {
 			lista.clear();
 			lblWarning.setText("");
@@ -283,8 +305,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		}
 	}
 	
-	
-	
 	public void deleteTables() {
 		txtName.setText("");
 		txtMemo.setText("");
@@ -310,6 +330,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	}
 
 	public void killProcessBW(List<Segmentos> lista,String name) {
+		System.out.println("Si entra");
 		Iterator<Segmentos> iters = lista.iterator();
 		while(iters.hasNext()) {
 			Segmentos s = iters.next();
@@ -325,6 +346,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 				}
 			}
 		}
+		repaintTablesBest();
 	}
 	
 	public boolean nameChecker(String name) {
@@ -371,8 +393,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		return false;
 	}
 	
-	
-	
 	public void addProcessWorst(String name,int processSize) {
 		if(!nameCheckerBest(name)) {
 			Iterator<Segmentos> iters = lista.iterator();
@@ -390,7 +410,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 			idsConsecutiveBest(processSize);
 			Iterator<Segmentos> iters = lista.iterator();
 			while(iters.hasNext()) {		
-				
 				Segmentos seg = iters.next();
 				if(seg.getId() == idSegmento) {
 					System.out.println(seg.getId() +" "+ idSegmento);
@@ -412,10 +431,9 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 				
 			}
 		}else {
-			lblWarning.setText("ya xiste ese proceso");
+			lblWarning.setText("ya existe ese proceso");
 		}
 	}
-	
 	
 	public void addProcessFirst(String name) {
 		if(!nameChecker(name)) {
@@ -455,7 +473,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		}
 	}
 	
-	
 	public void idsConsecutiveWorst(int pSize){
 		ids  = new int[pSize/256];
 		int cont=0;
@@ -469,27 +486,30 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	
 	public void idsConsecutiveBest(int pSize) {
 		ids = new int[pSize/256];
-		int cont = 0;	
+		int cont = 0,i=0;	
 		Iterator<Segmentos> iters = lista.iterator();
 		outerloop:
 		while (iters.hasNext()){
 			Segmentos s = iters.next();
 			Iterator<Procesos> iterp = s.getListaP().iterator();
-			
-			while(iterp.hasNext()) {
-				Procesos p =iterp.next();
-				if(p.getStatus().equals("libre") && p.getSpace()==256) {
-					ids[cont] = p.getId();
-					cont++;
-					if(cont == ids.length) {
+			if(s.getMemory()>=pSize) {
+				while(iterp.hasNext()) {
+					Procesos p =iterp.next();
+					if(p.getStatus().equals("libre") && p.getSpace()==256) {
+						ids[cont] = p.getId();
+						cont++;
+						if(cont == ids.length) {
+							
+							idSegmento = s.getId();
+							break outerloop;
+						}if(p.getId() == 4 && cont<pSize){
+							cont =0;
+						}
 						
-						idSegmento = s.getId();
-						break outerloop;
-					}
-					
-				}else {
-					cont=0;
-				}	
+					}else {
+						cont=0;
+					}	
+				}
 			}
 		}
 	}
@@ -555,8 +575,10 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		}
 		return id;
 	}
+
 	
 	public void arrayLoop(int[] a) {
+
 		for(int i=0;i < a.length;i++) {
 			System.out.println(a[i]);
 		}
@@ -569,9 +591,48 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode()== e.VK_ENTER) {
-			String [] instruction = c.getLastLine();
+			eventsByConsole();
 		}
 		
+	}
+	
+	public void  eventsByConsole() {
+		instruction = c.getLastLine(c);
+		if(instruction != null) {
+			if(instruction[0].equals("add")){
+				System.out.println(instruction[2]+" numero");
+				memo = bitMultiplier(Integer.parseInt(instruction[2]));
+					System.out.println("memo: "+memo);
+					switch(choice) {
+						case 1:
+							addProcessBest(memo,instruction[1]);
+							break;
+						case 2:
+							break;
+						case 3: 
+							if(spaceCheckerFirst(memo,lista)) {
+								if(consecutiveSpace(listaPtot,memo)) {
+									consecutiveRoom(listaPtot,memo/256);
+									addProcessFirst(instruction[1]);
+								}else {
+									lblWarning.setText("No hay espacio suficiente");
+								}
+							}else {
+								lblWarning.setText("No hay espacio suficiente");
+							}
+							break;							
+						}
+			}else {
+				switch(choice) {
+				case 1:case 2:
+					killProcessBW(lista,instruction[1]);
+					break;
+				case 3:
+					killProcessFirst(instruction[1]);
+					break;
+				}
+			}
+		}
 	}
 
 
