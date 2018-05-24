@@ -189,6 +189,7 @@ public class Menu extends JFrame implements ActionListener {
 			seg.getListaP().clear();
 			seg.setId(i);
 			seg.setMemory(1024);
+			seg.setStatus("disponible");
 			for(int k = 0;k<4;k++) {
 				Procesos p = new Procesos(k+1, def,"libre", 256);
 				if(k==0) {

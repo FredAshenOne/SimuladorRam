@@ -21,6 +21,7 @@ public class Segmentos {
 	private int id,memory;
 	int spTotalLibre;
 	private Procesos p1,p2,p3,p4;
+	private String status;
 	List<Procesos> listaPSeg = new ArrayList<Procesos>(),listaPTot = new ArrayList<Procesos>();
 	
 	
@@ -118,6 +119,14 @@ public class Segmentos {
 
 	public void setListaP(List<Procesos> listaP) {
 		this.listaPSeg = listaP;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 

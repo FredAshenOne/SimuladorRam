@@ -197,6 +197,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 								addProcessBest(memo,txtName.getText());
 								break;
 							case 2:
+									addProcessWorst(memo,txtName.getText());
 								break;
 							case 3: 
 								if(spaceCheckerFirst(memo,lista)) {
@@ -237,8 +238,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 			labelMemoW.setVisible(true);
 		}else if(e.getSource()==btnConsole) {
 			c.setVisible(true);		
-		}
-		
+		}		
 	}
 	
 	public boolean spaceCheckerFirst(int spaceNeeded,List<Segmentos> lista) {
@@ -257,14 +257,10 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	}
 	
 	public boolean spaceCheckerBest(int needed) {
-		Iterator<Segmentos> iters = lista.iterator();
-		while(iters.hasNext()) {
-			Segmentos s = iters.next();
-			if(s.getMemory()>=needed) {
-				return true;
-			}else {
-				lblWarning.setText("el proceso excede el segmentoa");
-			}
+		if(freeSpace>=needed) {
+			return true;
+		}else {
+			lblWarning.setText("Tamaño maximo alcanzado");
 		}
 		return false;
 	}
@@ -393,16 +389,65 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		return false;
 	}
 	
-	public void addProcessWorst(String name,int processSize) {
-		if(!nameCheckerBest(name)) {
-			Iterator<Segmentos> iters = lista.iterator();
-			Segmentos s = iters.next();
-			if(s.getId() == majorSpaceIndex()) {
-				
+	public boolean consecutiveWorstbySegment(Segmentos s,int pSize) {
+		int cont =0,i=0;
+		int[] array = new int[pSize/256];
+		Iterator<Procesos> iterp = s.getListaP().iterator();
+		while(iterp.hasNext()) {
+			Procesos p = iterp.next();
+			if(p.getStatus().equals("libre") && p.getSpace()==256) {
+				cont +=256;
+				array[i] = p.getId();
+				i++;
+				if(cont==pSize) {
+					ids=array;
+					return true;
+				}
+			}else {
+				cont = 0;
+				i=0;
 			}
 		}
 		
-		
+		return false;
+	}
+	
+	public void idsWorstbyId(int id,int pSize) {
+		int[] array = new int[pSize/256];
+		for(int i = 0;i<array.length;i++) {
+			array[i]=i+1;
+		}
+		ids=array;
+	}
+	
+	public void addProcessWorst(int pSize,String name) {
+		Iterator<Segmentos> iters = lista.iterator();
+		int id = findingMajor(pSize);
+		if(!nameCheckerBest(name)) {
+			if(spaceCheckerBest(pSize)) {
+				while(iters.hasNext()) {
+					Segmentos s = iters.next();
+					if(s.getId()==id) {
+						Iterator<Procesos> iterp = s.getListaP().iterator();
+						while(iterp.hasNext()) {
+							Procesos p = iterp.next();
+							for(int i=0;i<ids.length;i++) {
+								if(p.getId()==ids[i]) {
+									p.setName(name);
+									p.setSpace(0);
+									p.setStatus("ocupado");
+									freeSpace-=256;
+									s.setMemory(s.getMemory()-256);
+								}
+							}
+							repaintTablesBest();
+							
+						}
+					}
+						
+				}
+			}
+		}
 	}
 	
 	public void addProcessBest(int processSize,String name) {
@@ -458,6 +503,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		
 	}
 	
+	
 	public int bitMultiplier(int memo) {
 		if(memo>256) {
 		int x = memo / 256;
@@ -472,18 +518,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 			return 256;
 		}
 	}
-	
-	public void idsConsecutiveWorst(int pSize){
-		ids  = new int[pSize/256];
-		int cont=0;
-		Iterator<Segmentos> iters = lista.iterator();
-		while(iters.hasNext()) {
-			Segmentos s = iters.next();
-			
-			
-		}
-	}
-	
+		
 	public void idsConsecutiveBest(int pSize) {
 		ids = new int[pSize/256];
 		int cont = 0,i=0;	
@@ -557,25 +592,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		}
 	}
 	
-	public int majorSpaceIndex() {
-		int id = 0;
-		Iterator<Segmentos> iters = lista.iterator();
-		while(iters.hasNext()) {
-			Segmentos s = iters.next();
-			while(iters.hasNext()) {
-				Segmentos s1 = iters.next();
-				if(s1.getMemory()>s.getMemory()) {
-					id=s1.getId();
-				}else {
-					id=s.getId();
-				}
-				
-			}
-				
-		}
-		return id;
-	}
-
 	
 	public void arrayLoop(int[] a) {
 
@@ -587,6 +603,38 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 
 
 	
+	public int findingMajor(int pSize) {
+		int id = 0;
+		Iterator<Segmentos> iters = lista.iterator();
+		while(iters.hasNext()) {
+			Segmentos s1 = iters.next();
+			Iterator<Segmentos> iters1 = lista.iterator();
+			if(s1.getMemory()==1024) {
+				idsWorstbyId(s1.getId(),pSize);
+				return s1.getId();
+			}else{
+				while(iters1.hasNext()) {
+				Segmentos s2 = iters1.next();
+					if(s1.getId()!=s2.getId()) {
+						if(s1.getMemory() > s2.getMemory() && consecutiveWorstbySegment(s1, pSize) && s1.getMemory()>=pSize) {
+							return s1.getId();					
+						}else if(s2.getMemory() > s1.getMemory() && consecutiveWorstbySegment(s2,pSize)&& s2.getMemory()>=pSize){
+							return s2.getId();
+							
+							
+						}else if (s1.getMemory() == s2.getMemory() && consecutiveWorstbySegment(s1, pSize) && s1.getMemory()>=pSize || s2.getMemory() == s1.getMemory() && consecutiveWorstbySegment(s2,pSize)&& s2.getMemory()>=pSize) {
+							if(s1.getId()<s2.getId()) {
+								return s1.getId();
+							}else {
+								return s2.getId();
+							}
+						}
+					}
+				}
+			}
+		}
+		return id;
+	}
 	
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -608,6 +656,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 							addProcessBest(memo,instruction[1]);
 							break;
 						case 2:
+							addProcessWorst(memo,instruction[1]);
 							break;
 						case 3: 
 							if(spaceCheckerFirst(memo,lista)) {
@@ -639,9 +688,9 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
+	
 
 
 
