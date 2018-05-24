@@ -200,7 +200,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 									addProcessWorst(memo,txtName.getText());
 								break;
 							case 3: 
-								if(spaceCheckerFirst(memo,lista)) {
+								if(totalSpaceCheckerFirst(memo,lista)) {
 									if(consecutiveSpace(listaPtot,memo)) {
 										consecutiveRoom(listaPtot,memo/256);
 										addProcessFirst(txtName.getText());
@@ -241,7 +241,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		}		
 	}
 	
-	public boolean spaceCheckerFirst(int spaceNeeded,List<Segmentos> lista) {
+	public boolean totalSpaceCheckerFirst(int spaceNeeded,List<Segmentos> lista) {
 		
 		if(spaceNeeded>0) {
 			if( freeSpace >= spaceNeeded) {
@@ -256,7 +256,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		return false;
 	}
 	
-	public boolean spaceCheckerBest(int needed) {
+	public boolean totalSpaceCheckerBW(int needed) {
 		if(freeSpace>=needed) {
 			return true;
 		}else {
@@ -424,7 +424,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		Iterator<Segmentos> iters = lista.iterator();
 		int id = findingMajor(pSize);
 		if(!nameCheckerBest(name)) {
-			if(spaceCheckerBest(pSize)) {
+			if(totalSpaceCheckerBW(pSize)) {
 				while(iters.hasNext()) {
 					Segmentos s = iters.next();
 					if(s.getId()==id) {
@@ -452,28 +452,30 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	
 	public void addProcessBest(int processSize,String name) {
 		if(!nameCheckerBest(name)) {	
-			idsConsecutiveBest(processSize);
-			Iterator<Segmentos> iters = lista.iterator();
-			while(iters.hasNext()) {		
-				Segmentos seg = iters.next();
-				if(seg.getId() == idSegmento) {
-					System.out.println(seg.getId() +" "+ idSegmento);
-					Iterator<Procesos> iterp = seg.getListaP().iterator();
-					while(iterp.hasNext()) {
-						Procesos p = iterp.next();
-						for(int i = 0; i<ids.length;i++) {
-							if(p.getId()==ids[i]) {
-								p.setName(name);
-								p.setSpace(0);
-								p.setStatus("ocupado");
-								freeSpace-=256;
-								seg.setMemory(seg.getMemory()-256);
+			if(totalSpaceCheckerBW(processSize)) {
+				idsConsecutiveBest(processSize);
+				Iterator<Segmentos> iters = lista.iterator();
+				while(iters.hasNext()) {		
+					Segmentos seg = iters.next();
+					if(seg.getId() == idSegmento) {
+						System.out.println(seg.getId() +" "+ idSegmento);
+						Iterator<Procesos> iterp = seg.getListaP().iterator();
+						while(iterp.hasNext()) {
+							Procesos p = iterp.next();
+							for(int i = 0; i<ids.length;i++) {
+								if(p.getId()==ids[i]) {
+									p.setName(name);
+									p.setSpace(0);
+									p.setStatus("ocupado");
+									freeSpace-=256;
+									seg.setMemory(seg.getMemory()-256);
+								}
 							}
+							repaintTablesBest();
 						}
-						repaintTablesBest();
 					}
+					
 				}
-				
 			}
 		}else {
 			lblWarning.setText("ya existe ese proceso");
@@ -644,6 +646,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		
 	}
 	
+	
 	public void  eventsByConsole() {
 		instruction = c.getLastLine(c);
 		if(instruction != null) {
@@ -659,7 +662,7 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 							addProcessWorst(memo,instruction[1]);
 							break;
 						case 3: 
-							if(spaceCheckerFirst(memo,lista)) {
+							if(totalSpaceCheckerFirst(memo,lista)) {
 								if(consecutiveSpace(listaPtot,memo)) {
 									consecutiveRoom(listaPtot,memo/256);
 									addProcessFirst(instruction[1]);
@@ -685,11 +688,11 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	}
 
 
-
 	@Override
 	public void keyReleased(KeyEvent arg0) {
 		
 	}
+	
 	
 
 
