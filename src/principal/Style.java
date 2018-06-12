@@ -59,7 +59,7 @@ public class Style extends BasicComboBoxUI {
 	public void btnHover(JButton btn,Color cb,Color cf,Color cbord){
 	
 		btn.setContentAreaFilled(false);
-		btn.setBorder(new LineBorder(cbord,5,true));
+		btn.setBorder(new LineBorder(cbord,1,true));
 		btn.setOpaque(true);
 		btn.setBackground(cb);
 		btn.setForeground(cf);

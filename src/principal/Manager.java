@@ -17,6 +17,8 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -31,34 +33,35 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 
 	private static final long serialVersionUID = 1L;
 	JPanel contentPane,mainPanel,processPane;
-	private JTextField txtName,txtMemo;
 	Font f = new Font("Yu Gothic UI Light", Font.PLAIN, 18);
 	public List<Segmentos> lista = new ArrayList<Segmentos>();
 	String def = "__";
 	Style st = new Style();
+	JTextField txtName,txtMemo,txtConsole;
 	int memo,choice,spTotal,freeSpace,tamaño,idSegmento;
 	JLabel lblWarning,lblMemory = new JLabel("Espacio de memoria"),labelMemoW;
 	Segmentos s = new Segmentos();
 	JButton btnContinue,btnBack,btnConsole;
 	ButtonGroup g1 = new ButtonGroup();
 	JRadioButton rdbtnKill,rdbtnAdd;
-	Console c = new Console();
 	int[] array,ids;
+	String lastExpresion,instruccion;
 	String[] instruction;
-	
+	boolean console = true;
 	public List<Procesos> listaPtot = new ArrayList<Procesos>();
 	
 	
 	public Manager() {
 		
 		
+		setResizable(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		mainPanel = new JPanel();
-		mainPanel.setBounds(0, 0, 920, 457);
+		mainPanel.setBounds(0, 0, 920, 498);
 		contentPane.add(mainPanel);
 		mainPanel.setLayout(null);
 		
@@ -173,7 +176,6 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		btnConsole.addActionListener(this);
 		st.imgBtn(btnConsole, "views/console.png");
 		
-		c.txtConsole.addKeyListener(this);
 		st.mdPanel(mainPanel, Color.WHITE);
 		st.mdPanel(processMenu, Color.WHITE);
 		st.mdPanel(processPane, Color.white);
@@ -183,6 +185,16 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 		rdbtnAdd.setBackground(null);
 		rdbtnKill.setBackground(null);
 		st.mdBtn(btnContinue, Color.decode("#00796B"), Color.WHITE);
+		
+		txtConsole = new JTextField();
+		txtConsole.setVisible(false);
+		txtConsole.setBounds(25, 455, 306, 20);
+		mainPanel.add(txtConsole);
+		txtConsole.setColumns(10);
+		txtConsole.setCaretColor(Color.white);
+		txtConsole.setBackground(Color.BLACK);
+		txtConsole.setForeground(Color.WHITE);
+		txtConsole.addKeyListener(this);
 	}
 
 	@Override
@@ -237,7 +249,15 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 			lblMemory.setVisible(true);
 			labelMemoW.setVisible(true);
 		}else if(e.getSource()==btnConsole) {
-			c.setVisible(true);		
+			if (console) {
+				txtConsole.setVisible(true);
+				this.setBounds(100,100,this.getWidth(), 530);				
+				console = false;
+			}else {
+				txtConsole.setVisible(false);
+				this.setBounds(100, 100, this.getWidth(), 480);
+				console = true;
+			}
 		}		
 	}
 	
@@ -642,13 +662,16 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode()== e.VK_ENTER) {
 			eventsByConsole();
+			
+		}else if(e.getKeyCode()== e.VK_UP) {
+			txtConsole.setText(lastExpresion);
+			
 		}
 		
 	}
 	
 	
 	public void  eventsByConsole() {
-		instruction = c.getLastLine(c);
 		if(instruction != null) {
 			if(instruction[0].equals("add")){
 				System.out.println(instruction[2]+" numero");
@@ -686,8 +709,47 @@ public class Manager extends JFrame implements ActionListener,KeyListener{
 			}
 		}
 	}
-
-
+	
+	public String[] getLastLine() {
+		String[] text,instruction = null;
+		txtConsole.setCaretPosition(txtConsole.getText().length());
+		if(isAnExpression(txtConsole.getText())) {
+			lastExpresion=txtConsole.getText();
+			lastExpresion = lastExpresion.replace("'",""); 
+			lastExpresion = lastExpresion.replace("\"", "");
+			lastExpresion = lastExpresion.substring(0,lastExpresion.length()-1);
+			text = lastExpresion.split("\\(");
+			if(text[0].equals("add")) {
+				String[] parameters = text[1].split(",");
+				instruction = new String[] {text[0],parameters[0],parameters[1]};
+			}else if(text[0].equals("kill")) {
+				return text;
+			}else if(text[0].equals("exit")) {
+				
+			}else {
+				txtConsole.setText("La funcion no es valida\n");
+			}
+		}else{
+			txtConsole.setText("La funcion no es valida\n");
+		}
+		return instruction;
+	}
+	
+	public boolean isAnExpression(String s) {
+		Pattern patAdd = Pattern.compile("^[a-zA-Z]{3}[(](\"|\')[a-zA-Z]{1,3}(\"|\')[,][0-9]{3,4}[)]");
+		Pattern patKill = Pattern.compile("^[a-zA-Z]{4}[(](\"|\')[a-zA-Z]{1,3}(\"|\')[)]");
+		Pattern patExit = Pattern.compile("^[a-zA-Z]{4}[(][)]");
+		Matcher matAdd = patAdd.matcher(s);
+		Matcher matExit = patExit.matcher(s);
+		Matcher matKill = patKill.matcher(s);
+		if(matAdd.matches()||matKill.matches()|| matExit.matches()) {
+			return true;
+		}
+		return false;
+	}
+	
+	
+	
 	@Override
 	public void keyReleased(KeyEvent arg0) {
 		
